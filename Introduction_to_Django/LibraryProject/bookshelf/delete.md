@@ -12,6 +12,6 @@ This step demonstrates how to **delete the book** and verify its removal from th
 >>> book = Book.objects.filter(title="Nineteen Eighty-Four", author="George Orwell", publication_year=1949)
 >>> book.delete()
 >>> deleted
-1  # ✅ One row deleted
+1  #  One row deleted
 >>> list(Book.objects.all().values("id","title","author","publication_year"))
-[]  # ✅ Empty list confirms the book was removed
+[]  #  Empty list confirms the book was removed

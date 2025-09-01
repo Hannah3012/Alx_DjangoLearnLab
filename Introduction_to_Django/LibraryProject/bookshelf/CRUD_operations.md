@@ -27,23 +27,24 @@ class Book(models.Model):
 >>> from bookshelf.models import Book
 >>> b = Book.objects.create(title="1984", author="George Orwell", publication_year=1949)
 >>> b.pk  
-1  # ✅ ID of the new record (value may differ if other rows exist)
+1 
 
 # 2. Retrieve the Book Instance
 >>> obj = Book.objects.get(title="1984", author="George Orwell", publication_year=1949)
 >>> {"id": obj.id, "title": obj.title, "author": obj.author, "publication_year": obj.publication_year}
-{'id': 1, 'title': '1984', 'author': 'George Orwell', 'publication_year': 1949}  # ✅ Values of the retrieved book
+{'id': 1, 'title': '1984', 'author': 'George Orwell', 'publication_year': 1949}  
 
 # 3. Update the Book Title
 >>> obj = Book.objects.get(title="1984", author="George Orwell", publication_year=1949)
 >>> obj.title = "Nineteen Eighty-Four"
 >>> obj.save()
 >>> {"id": obj.id, "title": obj.title, "author": obj.author, "publication_year": obj.publication_year}
-{'id': 1, 'title': 'Nineteen Eighty-Four', 'author': 'George Orwell', 'publication_year': 1949}  # ✅ Title updated successfully
-
+{'id': 1, 'title': 'Nineteen Eighty-Four', 'author': 'George Orwell', 'publication_year': 1949} 
 # 4. Delete the Book Instance
->>> deleted, _ = Book.objects.filter(title="Nineteen Eighty-Four", author="George Orwell", publication_year=1949).delete()
+>>> from bookshelf.models import Book
+>>> book = Book.objects.filter(title="Nineteen Eighty-Four", author="George Orwell", publication_year=1949)
+>>> book.delete()
 >>> deleted
-1  # ✅ One row deleted
+1 
 >>> list(Book.objects.all().values("id","title","author","publication_year"))
-[]  # ✅ Empty list confirms the book was removed
+[] 
