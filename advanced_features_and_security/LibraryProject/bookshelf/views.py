@@ -2,7 +2,7 @@ from django.shortcuts import render
 
 from django.shortcuts import render, get_object_or_404
 from .models import Book
-from .forms import BookSearchForm
+from .forms import ExampleForm, BookSearchForm
 
 def search_books(request):
     form = BookSearchForm(request.GET)
