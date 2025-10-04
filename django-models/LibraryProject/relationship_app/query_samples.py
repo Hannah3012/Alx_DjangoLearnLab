@@ -1,10 +1,11 @@
 import os
 import django
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'your_project.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'LibraryProject.settings')
 django.setup()
 
 from relationship_app.models import Author, Book, Library, Librarian
+
 
 def create_sample_data():
     author, _ = Author.objects.get_or_create(name="Jane Austen")
@@ -15,24 +16,22 @@ def create_sample_data():
     lib.books.add(b1, b2)
 
     librarian, _ = Librarian.objects.get_or_create(name="John Smith", library=lib)
-
     return author, lib, librarian
+
 
 def queries(author, library, librarian):
     print("=== Query: All books by author ===")
-    for b in author.books.all():
-        print("-", b.title)
-
     books_by_author = Book.objects.filter(author=author)
-    print("\nBooks_by_author (count):", books_by_author.count())
+    for book in books_by_author:
+        print("-", book.title)
 
     print("\n=== Query: All books in library ===")
     for b in library.books.all():
         print("-", b.title)
 
     print("\n=== Query: Librarian for the library ===")
-    print("Library.librarian:", library.librarian.name)
-    print("Librarian.objects.get(library=library):", Librarian.objects.get(library=library).name)
+    print("Librarian:", Librarian.objects.get(library=library).name)
+
 
 if __name__ == '__main__':
     author, library, librarian = create_sample_data()
