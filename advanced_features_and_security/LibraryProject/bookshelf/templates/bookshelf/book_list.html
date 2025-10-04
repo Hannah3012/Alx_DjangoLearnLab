@@ -1,0 +1,24 @@
+{# LibraryProject/bookshelf/templates/bookshelf/book_list.html #}
+{% extends "base.html" %}
+{% block content %}
+  <h1>Books</h1>
+
+  <form method="get" action="{% url 'bookshelf:search' %}">
+    <label for="q">Search</label>
+    <input id="q" name="q" type="text" value="{{ request.GET.q|default_if_none:'' }}">
+    <button type="submit">Search</button>
+  </form>
+
+  <ul>
+    {% for book in books %}
+      <li>
+        <strong>{{ book.title }}</strong> by {{ book.author }}<br>
+        {% if book.summary %}
+          {{ book.summary|truncatechars:150 }}
+        {% endif %}
+      </li>
+    {% empty %}
+      <li>No books found.</li>
+    {% endfor %}
+  </ul>
+{% endblock %}
