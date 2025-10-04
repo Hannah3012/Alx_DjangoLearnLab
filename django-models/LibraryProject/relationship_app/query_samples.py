@@ -17,7 +17,6 @@ def create_sample_data():
     librarian, _ = Librarian.objects.get_or_create(name="John Smith", library=lib)
     return author, lib, librarian
 
-
 def queries(author, library, librarian):
     author_name = "Jane Austen"
     author = Author.objects.get(name=author_name)
