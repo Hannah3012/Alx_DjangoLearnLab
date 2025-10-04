@@ -26,7 +26,9 @@ def queries(author, library, librarian):
         print("-", book.title)
 
     print("\n=== Query: All books in library ===")
-    for b in library.books.all():
+    library_name = "Central Library"
+    selected_library = Library.objects.get(name=library_name)
+    for b in selected_library.books.all():
         print("-", b.title)
 
     print("\n=== Query: Librarian for the library ===")
