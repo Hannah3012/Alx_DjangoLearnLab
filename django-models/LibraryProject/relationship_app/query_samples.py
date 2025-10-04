@@ -6,7 +6,6 @@ django.setup()
 
 from relationship_app.models import Author, Book, Library, Librarian
 
-
 def create_sample_data():
     author, _ = Author.objects.get_or_create(name="Jane Austen")
     b1, _ = Book.objects.get_or_create(title="Pride and Prejudice", author=author)
@@ -20,6 +19,9 @@ def create_sample_data():
 
 
 def queries(author, library, librarian):
+    author_name = "Jane Austen"
+    author = Author.objects.get(name=author_name)
+    
     print("=== Query: All books by author ===")
     books_by_author = Book.objects.filter(author=author)
     for book in books_by_author:
