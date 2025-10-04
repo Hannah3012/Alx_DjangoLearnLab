@@ -1,20 +1,39 @@
 import os
 import django
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "django_models.settings")
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'your_project.settings')
 django.setup()
 
 from relationship_app.models import Author, Book, Library, Librarian
 
-author_name = "J.K. Rowling"
-author = Author.objects.get(name=author_name)
-books_by_author = author.books.all()
-print(f"Books by {author_name}: {[book.title for book in books_by_author]}")
+def create_sample_data():
+    author, _ = Author.objects.get_or_create(name="Jane Austen")
+    b1, _ = Book.objects.get_or_create(title="Pride and Prejudice", author=author)
+    b2, _ = Book.objects.get_or_create(title="Emma", author=author)
 
-library_name = "Central Library"
-library = Library.objects.get(name=library_name)
-books_in_library = library.books.all()
-print(f"Books in {library_name}: {[book.title for book in books_in_library]}")
+    lib, _ = Library.objects.get_or_create(name="Central Library")
+    lib.books.add(b1, b2)
 
-librarian = library.librarian
-print(f"Librarian of {library_name}: {librarian.name}")
+    librarian, _ = Librarian.objects.get_or_create(name="John Smith", library=lib)
+
+    return author, lib, librarian
+
+def queries(author, library, librarian):
+    print("=== Query: All books by author ===")
+    for b in author.books.all():
+        print("-", b.title)
+
+    books_by_author = Book.objects.filter(author=author)
+    print("\nBooks_by_author (count):", books_by_author.count())
+
+    print("\n=== Query: All books in library ===")
+    for b in library.books.all():
+        print("-", b.title)
+
+    print("\n=== Query: Librarian for the library ===")
+    print("Library.librarian:", library.librarian.name)
+    print("Librarian.objects.get(library=library):", Librarian.objects.get(library=library).name)
+
+if __name__ == '__main__':
+    author, library, librarian = create_sample_data()
+    queries(author, library, librarian)
