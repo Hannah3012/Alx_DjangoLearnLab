@@ -1,15 +1,18 @@
-from django.shortcuts import render, get_object_or_404
-from django.views.generic import DetailView
+from django.shortcuts import render, get_object_or_404, redirect
+from django.http import HttpResponse
+from django.contrib.auth.decorators import permission_required
 from .models import Book
-from .models import Library
-from django.views.generic.detail import DetailView
 
-def list_books(request):
-    books = Book.objects.all()
-    context = {'books': books}
-    return render(request, 'relationship_app/list_books.html', context)
+@permission_required('relationship_app.can_add_book', raise_exception=True)
+def add_book(request):
+    return HttpResponse("You have permission to add a book.")
 
-class LibraryDetailView(DetailView):
-    model = Library
-    template_name = 'relationship_app/library_detail.html'
-    context_object_name = 'library'
+@permission_required('relationship_app.can_change_book', raise_exception=True)
+def edit_book(request, pk):
+    book = get_object_or_404(Book, pk=pk)
+    return HttpResponse(f"You have permission to edit the book: {book.title}")
+
+@permission_required('relationship_app.can_delete_book', raise_exception=True)
+def delete_book(request, pk):
+    book = get_object_or_404(Book, pk=pk)
+    return HttpResponse(f"You have permission to delete the book: {book.title}")
