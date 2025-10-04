@@ -4,6 +4,16 @@ from django.db import connection
 from django.core.paginator import Paginator
 from .models import Book
 from .forms import BookForm, BookSearchForm
+from .forms import ExampleForm
+
+def example_form_view(request):
+    if request.method == "POST":
+        form = ExampleForm(request.POST)
+        if form.is_valid():
+            pass
+    else:
+        form = ExampleForm()
+    return render(request, "bookshelf/form_example.html", {"form": form})
 
 def book_list(request):
     form = BookSearchForm(request.GET)
