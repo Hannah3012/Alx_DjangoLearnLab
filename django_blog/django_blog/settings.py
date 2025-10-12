@@ -67,6 +67,10 @@ TEMPLATES = [
     },
 ]
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+
 WSGI_APPLICATION = 'django_blog.wsgi.application'
 
 
@@ -81,6 +85,10 @@ DATABASES = {
         'PORT': '3306',
     }
 }
+
+LOGIN_REDIRECT_URL = 'profile'
+LOGOUT_REDIRECT_URL = 'login'
+
 
 
 # Password validation
