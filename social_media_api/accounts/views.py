@@ -1,17 +1,58 @@
-from rest_framework import viewsets, permissions, status
+from rest_framework import generics, viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from django.contrib.auth import get_user_model
-from .serializers import UserSerializer
+from django.contrib.auth import authenticate
+from rest_framework.authtoken.models import Token
+from .models import User as CustomUser 
+from .serializers import (
+    UserSerializer,
+    RegisterSerializer,
+    LoginSerializer
+)
+class RegisterView(generics.GenericAPIView):
+    serializer_class = RegisterSerializer
 
-User = get_user_model()
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        token, _ = Token.objects.get_or_create(user=user)
+        return Response(
+            {
+                "user": UserSerializer(user).data,
+                "token": token.key
+            },
+            status=status.HTTP_201_CREATED
+        )
+class LoginView(generics.GenericAPIView):
+    serializer_class = LoginSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
+        token, _ = Token.objects.get_or_create(user=user)
+        return Response(
+            {
+                "user": UserSerializer(user).data,
+                "token": token.key
+            },
+            status=status.HTTP_200_OK
+        )
 
 
+# Profile view
+class ProfileView(generics.RetrieveUpdateAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = UserSerializer
+
+    def get_object(self):
+        return self.request.user
+
+
+# UserViewSet (list + follow/unfollow functionality)
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
-    """
-    ViewSet for listing users and managing follow/unfollow actions.
-    """
-    queryset = User.objects.all()
+    queryset = CustomUser.objects.all()  # ✅ Explicitly use CustomUser
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
@@ -33,14 +74,12 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
 
     @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])
     def following(self, request):
-        """Return the list of users the current user follows."""
         users = request.user.following.all()
         serializer = self.get_serializer(users, many=True)
         return Response(serializer.data)
 
     @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])
     def followers(self, request):
-        """Return the list of users who follow the current user."""
         users = request.user.followers.all()
         serializer = self.get_serializer(users, many=True)
         return Response(serializer.data)
