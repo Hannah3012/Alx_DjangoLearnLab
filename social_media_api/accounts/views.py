@@ -1,6 +1,8 @@
 from rest_framework import generics, viewsets, permissions, status
 from rest_framework.decorators import action
+from rest_framework.views import APIView
 from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
 from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
 from .models import User as CustomUser 
@@ -49,6 +51,22 @@ class ProfileView(generics.RetrieveUpdateAPIView):
     def get_object(self):
         return self.request.user
 
+class FollowUserView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, user_id):
+        target_user = get_object_or_404(CustomUser, id=user_id)
+        request.user.following.add(target_user)
+        return Response({"message": f"You are now following {target_user.username}"}, status=status.HTTP_200_OK)
+
+
+class UnfollowUserView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, user_id):
+        target_user = get_object_or_404(CustomUser, id=user_id)
+        request.user.following.remove(target_user)
+        return Response({"message": f"You unfollowed {target_user.username}"}, status=status.HTTP_200_OK)
 
 # UserViewSet (list + follow/unfollow functionality)
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
