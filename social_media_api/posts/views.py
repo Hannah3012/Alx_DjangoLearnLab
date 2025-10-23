@@ -49,22 +49,25 @@ class CommentViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
-class LikePostView(APIView):
+class LikePostView(generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
+    serializer_class = LikeSerializer
 
-    def post(self, request, post_id):
-        post = get_object_or_404(Post, id=post_id)
+    def post(self, request, pk):
+        post = generics.get_object_or_404(Post, pk=pk)
         user = request.user
 
-        if Like.objects.filter(post=post, user=user).exists():
+        like, created = Like.objects.get_or_create(user=request.user, post=post)
+        if not created:
             return Response({"message": "You already liked this post."}, status=status.HTTP_400_BAD_REQUEST)
+
 
         like = Like.objects.create(post=post, user=user)
         
-        if post.author != user:
+        if post.author != request.user:
             Notification.objects.create(
                 recipient=post.author,
-                actor=user,
+                actor=request.user,
                 verb='liked your post',
                 target_content_type=ContentType.objects.get_for_model(post),
                 target_object_id=post.id
@@ -73,16 +76,16 @@ class LikePostView(APIView):
         return Response(LikeSerializer(like).data, status=status.HTTP_201_CREATED)
 
 
-class UnlikePostView(APIView):
+class UnlikePostView(generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
+    serializer_class = LikeSerializer
 
-    def post(self, request, post_id):
-        post = get_object_or_404(Post, id=post_id)
-        user = request.user
+    def post(self, request, pk):
+        post = generics.get_object_or_404(Post, pk=pk)
+        like = Like.objects.filter(user=request.user, post=post).first()
 
-        like = Like.objects.filter(post=post, user=user).first()
         if not like:
-            return Response({"message": "You haven't liked this post yet."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": "You haven’t liked this post yet."}, status=status.HTTP_400_BAD_REQUEST)
 
         like.delete()
         return Response({"message": "Post unliked successfully."}, status=status.HTTP_200_OK)
