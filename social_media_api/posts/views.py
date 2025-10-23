@@ -1,7 +1,12 @@
 from django.shortcuts import render
-from rest_framework import viewsets, permissions, filters, generics
-from .models import Post, Comment
-from .serializers import PostSerializer, CommentSerializer
+from rest_framework import viewsets, permissions, filters, generics, status
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
+from .models import Post, Comment, Like
+from .serializers import PostSerializer, CommentSerializer, LikeSerializer
+from notifications.models import Notification
+from django.contrib.contenttypes.models import ContentType
 
 
 class FeedView(generics.ListAPIView):
@@ -44,4 +49,41 @@ class CommentViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
+class LikePostView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, post_id):
+        post = get_object_or_404(Post, id=post_id)
+        user = request.user
+
+        if Like.objects.filter(post=post, user=user).exists():
+            return Response({"message": "You already liked this post."}, status=status.HTTP_400_BAD_REQUEST)
+
+        like = Like.objects.create(post=post, user=user)
+        
+        if post.author != user:
+            Notification.objects.create(
+                recipient=post.author,
+                actor=user,
+                verb='liked your post',
+                target_content_type=ContentType.objects.get_for_model(post),
+                target_object_id=post.id
+            )
+
+        return Response(LikeSerializer(like).data, status=status.HTTP_201_CREATED)
+
+
+class UnlikePostView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, post_id):
+        post = get_object_or_404(Post, id=post_id)
+        user = request.user
+
+        like = Like.objects.filter(post=post, user=user).first()
+        if not like:
+            return Response({"message": "You haven't liked this post yet."}, status=status.HTTP_400_BAD_REQUEST)
+
+        like.delete()
+        return Response({"message": "Post unliked successfully."}, status=status.HTTP_200_OK)
 
